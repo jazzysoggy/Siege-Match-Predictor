@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="./styles.css">
+  <title>Siege Matchmaking Predictor</title>
+</head>
+<body>
+  <script async src="./javascript/index.js"></script>
+  <h1>Siege Matchmaking Predictor</h1>
+  <h2>Enter in your team compositions of choice, and we will predict which team is favored to win and by how much.</h2>
+  <form action="{{ url_for('index') }}" method="POST">
+  <h3>Enter Team 1</h3>
+    <div class="tA">
+        <label for="tAone">Player One:</label>
+        <input type="text" id="tAone" name="tAone"><br>
+        <label for="tAtwo">Player Two:</label>
+        <input type="text" id="tAtwo" name="tAtwo"><br>
+        <label for="tAthree">Player Three:</label>
+        <input type="text" id="tAthree" name="tAthree"><br>
+        <label for="tAfour">Player Four:</label>
+        <input type="text" id="tAfour" name="tAfour"><br>
+        <label for="tAfive">Player Five:</label>
+        <input type="text" id="tAfive" name="tAfive"><br>
+    </div>
+    <h3>Enter Team 2</h3>
+    <div class="tB">
+        <label for="tBone">Player One:</label>
+        <input type="text" id="tBone" name="tBone"><br>
+        <label for="tBtwo">Player Two:</label>
+        <input type="text" id="tBtwo" name="tBtwo"><br>
+        <label for="tBthree">Player Three:</label>
+        <input type="text" id="tBthree" name="tBthree"><br>
+        <label for="tBfour">Player Four:</label>
+        <input type="text" id="tBfour" name="tBfour"><br>
+        <label for="tBfive">Player Five:</label>
+        <input type="text" id="tBfive" name="tBfive"><br>
+    </div>
+    <h3>Enter Mode</h3><br>
+    <label for="mode">Mode:</label>
+    <input type="number" id="mode" name="mode"><br>
+    <input type="button" id="submission" value="Submit">
+    <br><br>
+    <input type="submit" name="Submit" value="Submit">
+  </form>
+<br><br>
+{% if results %}
+   <h2>Results</h2>
+   {% if results[0] == 1 %}
+     Team 1 is Favored to Win
+   {%else%}
+     Team 2 is Favored to Win
+   {% endif %} 
+   <br>
+    <p>Probability of Victory: {{results[1]}}%.
+{% endif %}
+</body>
+</html>
