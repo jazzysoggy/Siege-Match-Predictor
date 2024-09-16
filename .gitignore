@@ -1,1 +1,6 @@
 *.csv
+creds/
+.venv/
+__pycache__/
+token.txt
+model.pth

@@ -9,7 +9,6 @@ from base import NNNonFlatten
 
 
 
-
 device = (    
     "cuda"
    if torch.cuda.is_available()
@@ -75,23 +74,6 @@ def predict(team, mode):
             return 2, (exp(predicted)/(1+exp(predicted)) * 100)
         elif(round(predicted.item()) == 0):
             return 1, 1 - exp(predicted)/(1+exp(predicted)) * 100
-
-
-test = False
-
-# Basic command line for testing, this will be replaced with website link in
-while test:
-    command = input("Type in command:")
-    if(command == "QUIT"):
-        quit()
-    
-    if(command.split(' ', 1)[0] == "PREDICT"):
-        splitted = command.split(' ')
-        splitted.pop(0)
-        mode = int(splitted[-1])
-        splitted.pop(-1)
-        predictTest(splitted, mode)
-        
         
         
 from flask import Flask, render_template, redirect, url_for,request
@@ -115,3 +97,19 @@ def index():
       teams, percent = predict({form.tAone, form.tAtwo, form.tAthree, form.tAfour, form.tAfive, form.tBone, form.tBtwo, form.tBthree, form.tBfour, form.tBfive}, form.mode)
   return render_template('mainWeb.html', team=teams, percent=percent)
       
+
+test = False
+
+# Basic command line for testing, this will be replaced with website link in
+while test:
+    command = input("Type in command:")
+    if(command == "QUIT"):
+        quit()
+    
+    if(command.split(' ', 1)[0] == "PREDICT"):
+        splitted = command.split(' ')
+        splitted.pop(0)
+        mode = int(splitted[-1])
+        splitted.pop(-1)
+        predictTest(splitted, mode)
+        

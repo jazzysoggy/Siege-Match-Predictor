@@ -10,11 +10,12 @@ import numpy
 # Dataframe for storing up to 24 hours of player data (This is to prevent API overload for overretrieved players)
 df = pd.read_csv("dataFrame.csv")
 
+f = open("token.txt", "r")
 # Login keys: Replace with your own (Doesn't need to be Siege owning account)
-UBISOFT_EMAIL = 
-UBISOFT_PASSW = 
+UBISOFT_EMAIL = f.readline(1)
+UBISOFT_PASSW = f.readline(1)
 
-expiration = 604800
+expiration = 100000000000000000000000
 
 # Functions meant to check whether given mode and player combination has data already stored within an alotted time
 def checkExists(players, mode):
@@ -221,8 +222,6 @@ async def createData(usrs, mode):
     
     output = output.apply(lambda x: x.astype(float, errors='ignore'))
     
-    print(usrs)
-    
     output = output.apply(lambda x: x.fillna(x.mean()), axis=0) 
     
     output = (output - output.mean(numeric_only=True)) / output.std(numeric_only=True)
@@ -244,7 +243,7 @@ class teamDataset(Dataset):
         self.winners=winner
         
     def __getitem__(self, index):
-        dataframe = torch.tensor(self.teams[index].values).float()
+        dataframe = torch.tensor(self.teams[index].to_numpy()).float()
         winner = torch.tensor(self.winners[index]).float()
         return dataframe, winner
         

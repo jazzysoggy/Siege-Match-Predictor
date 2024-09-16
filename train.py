@@ -8,10 +8,10 @@ from base import NeuralNetwork
 training = pd.read_csv("train.csv")
 testing = pd.read_csv("test.csv")
 
-train_dataloader = DataLoader(convertToDataset(training), batch_size=64, shuffle=True)
-test_dataloader = DataLoader(convertToDataset(testing), batch_size=64, shuffle=True)
+batch_size = 10
 
-batch_size = 64
+train_dataloader = DataLoader(convertToDataset(training), batch_size=batch_size, shuffle=True)
+test_dataloader = DataLoader(convertToDataset(testing), batch_size=batch_size, shuffle=True)
 
 device = (    
     "cuda"
@@ -25,25 +25,25 @@ print(f"Using {device} device")
 best_acc = -np.inf
 
 # 70 input -> 30 hidden layer
-model = NeuralNetwork(70, 30).to(device)
+model = NeuralNetwork(70, 35).to(device)
 
 # Binary classification calls for BCE criterion
 criterion = torch.nn.BCELoss()
 
 # High learning rate tuning for quick model creation
-optimizer = torch.optim.SGD(model.parameters(), lr = 0.9, momentum=0.2)
+optimizer = torch.optim.SGD(model.parameters(), lr=0.9, weight_decay=1e-3)
 
 
 def train(dataloader, model, loss_fn, optimizer):
     size = len(training)
-    
+    errors = []
     for batch, (X, y) in enumerate(dataloader):
         optimizer.zero_grad()
         X, y = X.to(device), y.to(device)
-
+        
         # Compute prediction error
-        pred = model(X)
-        loss = loss_fn(pred.squeeze(), y)
+        pred = model(X).squeeze()
+        loss = loss_fn(pred, y)
 
         # Backpropagation
         loss.backward()
@@ -62,10 +62,11 @@ def test(dataloader, model, loss_fn):
     with torch.no_grad():
         for X, y in dataloader:
             X, y = X.to(device), y.to(device)
-            pred = model(X)
-            test_loss += loss_fn(pred.squeeze(), y).item()
+            pred = model(X).squeeze()
+            test_loss += loss_fn(pred, y)
+            pred = torch.round(pred)
             # print(f"{numpy.round(pred.squeeze()[0].item())} {y[0]}")
-            correct += (pred.squeeze() - y).mean().sqrt()
+            correct += (pred - y).abs().sum()
 
     test_loss /= num_batches
     correct /= size
