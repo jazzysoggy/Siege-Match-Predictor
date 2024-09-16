@@ -239,11 +239,11 @@ async def createData(usrs, mode):
 # Custom data loader that converts dataframe to tensor
 class teamDataset(Dataset):
     def __init__(self, dataframes, winner):
-        self.teams=dataframes
+        self.teams=numpy.array(dataframes)
         self.winners=winner
         
     def __getitem__(self, index):
-        dataframe = torch.tensor(self.teams[index].to_numpy()).float()
+        dataframe = torch.tensor(self.teams[index]).float()
         winner = torch.tensor(self.winners[index]).float()
         return dataframe, winner
         
