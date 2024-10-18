@@ -8,7 +8,7 @@ from base import NeuralNetwork
 training = pd.read_csv("train.csv")
 testing = pd.read_csv("test.csv")
 
-batch_size = 10
+batch_size = 8
 
 train_dataloader = DataLoader(convertToDataset(training), batch_size=batch_size, shuffle=True)
 test_dataloader = DataLoader(convertToDataset(testing), batch_size=batch_size, shuffle=True)
@@ -25,17 +25,17 @@ print(f"Using {device} device")
 best_acc = -np.inf
 
 # 70 input -> 30 hidden layer
-model = NeuralNetwork(70, 35).to(device)
+model = NeuralNetwork(70, 40).to(device)
 
 # Binary classification calls for BCE criterion
 criterion = torch.nn.BCELoss()
 
 # High learning rate tuning for quick model creation
-optimizer = torch.optim.SGD(model.parameters(), lr=0.9, weight_decay=1e-3)
+optimizer = torch.optim.SGD(model.parameters(), lr=0.9, momentum=0.2, weight_decay=1e-3)
 
 
 def train(dataloader, model, loss_fn, optimizer):
-    size = len(training)
+    size = len(dataloader.dataset)
     errors = []
     for batch, (X, y) in enumerate(dataloader):
         optimizer.zero_grad()
@@ -80,5 +80,5 @@ for t in range(epochs):
     test(test_dataloader, model, criterion)
 print("Done!")
 
-torch.save(model.state_dict(), "model.pth")
-print("Saved PyTorch Model State to model.pth")
+torch.save(model.state_dict(), "model1.pth")
+print("Saved PyTorch Model State to model1.pth")

@@ -6,16 +6,21 @@ from torch import nn
 from torch.utils.data import Dataset
 import time
 import numpy
+from sklearn.preprocessing import RobustScaler
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer
 
 # Dataframe for storing up to 24 hours of player data (This is to prevent API overload for overretrieved players)
 df = pd.read_csv("dataFrame.csv")
 
 f = open("token.txt", "r")
 # Login keys: Replace with your own (Doesn't need to be Siege owning account)
-UBISOFT_EMAIL = f.readline(1)
-UBISOFT_PASSW = f.readline(1)
+UBISOFT_EMAIL = f.readline()
+UBISOFT_PASSW = f.readline()
 
-expiration = 100000000000000000000000
+UBISOFT_EMAIL=UBISOFT_EMAIL[:-1]
+
+expiration = 3600*24*30
 
 # Functions meant to check whether given mode and player combination has data already stored within an alotted time
 def checkExists(players, mode):
@@ -71,42 +76,52 @@ async def createData(usrs, mode):
                 continue
             
             dt = time.time()
-            player = await auth.get_player(name=players)
-            id = player.id
-            await player.load_playtime()
-            pvp_time_played = player.pvp_time_played
-            await player.load_ranked_v2()
-            profile=player.casual_profile    
-            
+
+            try:
+                player = await auth.get_player(name=players)
+                id = player.id
+                await player.load_playtime()
+                pvp_time_played = player.pvp_time_played
+                await player.load_ranked_v2()
+                profile=player.casual_profile
             # If profile doesn't exist, we will average it at the end
-            if(profile is None):
-                profile = player.unranked_profile
                 if(profile is None):
-                    profile = player.ranked_profile
-                    if(profile is None):   
-                        wins = float('NaN')
-                        losses = float('NaN')
-                        abandons = float('NaN')
-                        kills = float('NaN')
-                        deaths = float('NaN')
+                    profile = player.unranked_profile
+                    if(profile is None):
+                        profile = player.ranked_profile
+                        if(profile is None):   
+                            wins = float('NaN')
+                            losses = float('NaN')
+                            abandons = float('NaN')
+                            kills = float('NaN')
+                            deaths = float('NaN')
+                        else:
+                            wins = profile.wins
+                            losses = profile.losses
+                            abandons = profile.abandons
+                            kills = profile.kills
+                            deaths = profile.deaths                       
                     else:
                         wins = profile.wins
                         losses = profile.losses
                         abandons = profile.abandons
                         kills = profile.kills
-                        deaths = profile.deaths                       
+                        deaths = profile.deaths
                 else:
                     wins = profile.wins
                     losses = profile.losses
                     abandons = profile.abandons
                     kills = profile.kills
                     deaths = profile.deaths
-            else:
-                wins = profile.wins
-                losses = profile.losses
-                abandons = profile.abandons
-                kills = profile.kills
-                deaths = profile.deaths
+            except:
+                pvp_time_played = float('NaN')
+                id = -1
+                wins = float('NaN')
+                losses = float('NaN')
+                abandons = float('NaN')
+                kills = float('NaN')
+                deaths = float('NaN')
+            
             
             # Locate player at the end of output table
             output.loc[len(output)] = [top_rank_position, pvp_time_played, wins, losses, abandons, kills, deaths]
@@ -127,41 +142,51 @@ async def createData(usrs, mode):
                 continue
                         
             dt = time.time()
-            player = await auth.get_player(name=players)
-            id = player.id
-            await player.load_playtime()
-            pvp_time_played = player.pvp_time_played
-            await player.load_ranked_v2()
-            profile=player.unranked_profile 
-               
-            if(profile is None):
-                profile = player.ranked_profile
+            try:
+                player = await auth.get_player(name=players)
+                id = player.id
+                await player.load_playtime()
+                pvp_time_played = player.pvp_time_played
+                await player.load_ranked_v2()
+                profile=player.unranked_profile
+            # If profile doesn't exist, we will average it at the end
                 if(profile is None):
-                    profile = player.casual_profile
-                    if(profile is None):   
-                        wins = float('NaN')
-                        losses = float('NaN')
-                        abandons = float('NaN')
-                        kills = float('NaN')
-                        deaths = float('NaN')
+                    profile = player.ranked_profile
+                    if(profile is None):
+                        profile = player.casual_profile
+                        if(profile is None):   
+                            wins = float('NaN')
+                            losses = float('NaN')
+                            abandons = float('NaN')
+                            kills = float('NaN')
+                            deaths = float('NaN')
+                        else:
+                            wins = profile.wins
+                            losses = profile.losses
+                            abandons = profile.abandons
+                            kills = profile.kills
+                            deaths = profile.deaths                       
                     else:
                         wins = profile.wins
                         losses = profile.losses
                         abandons = profile.abandons
                         kills = profile.kills
-                        deaths = profile.deaths                       
+                        deaths = profile.deaths
                 else:
                     wins = profile.wins
                     losses = profile.losses
                     abandons = profile.abandons
                     kills = profile.kills
                     deaths = profile.deaths
-            else:
-                wins = profile.wins
-                losses = profile.losses
-                abandons = profile.abandons
-                kills = profile.kills
-                deaths = profile.deaths
+            except:
+                pvp_time_played = float('NaN')
+                id = -1
+                wins = float('NaN')
+                losses = float('NaN')
+                abandons = float('NaN')
+                kills = float('NaN')
+                deaths = float('NaN')
+               
             output.loc[len(output)] = [top_rank_position, pvp_time_played, wins, losses, abandons, kills, deaths]
 
             df.loc[len(df)] = [mode, players, id, top_rank_position, pvp_time_played, wins, losses, abandons, kills, deaths, dt]
@@ -179,42 +204,51 @@ async def createData(usrs, mode):
                 continue
             
             dt = time.time()
-            player = await auth.get_player(name=players)
-            id = player.id
-            await player.load_playtime()
-            pvp_time_played = player.pvp_time_played
-            
-            await player.load_ranked_v2()
-            profile= player.ranked_profile
-           
-            if(profile is None):
-                profile = player.unranked_profile
+            try:
+                player = await auth.get_player(name=players)
+                id = player.id
+                await player.load_playtime()
+                pvp_time_played = player.pvp_time_played
+                await player.load_ranked_v2()
+                profile=player.ranked_profile
+            # If profile doesn't exist, we will average it at the end
                 if(profile is None):
-                    profile = player.casual_profile
-                    if(profile is None):   
-                        wins = float('NaN')
-                        losses = float('NaN')
-                        abandons = float('NaN')
-                        kills = float('NaN')
-                        deaths = float('NaN')
+                    profile = player.unranked_profile
+                    if(profile is None):
+                        profile = player.casual_profile
+                        if(profile is None):   
+                            wins = float('NaN')
+                            losses = float('NaN')
+                            abandons = float('NaN')
+                            kills = float('NaN')
+                            deaths = float('NaN')
+                        else:
+                            wins = profile.wins
+                            losses = profile.losses
+                            abandons = profile.abandons
+                            kills = profile.kills
+                            deaths = profile.deaths                       
                     else:
                         wins = profile.wins
                         losses = profile.losses
                         abandons = profile.abandons
                         kills = profile.kills
-                        deaths = profile.deaths                       
+                        deaths = profile.deaths
                 else:
                     wins = profile.wins
                     losses = profile.losses
                     abandons = profile.abandons
                     kills = profile.kills
                     deaths = profile.deaths
-            else:
-                wins = profile.wins
-                losses = profile.losses
-                abandons = profile.abandons
-                kills = profile.kills
-                deaths = profile.deaths
+            except:
+                pvp_time_played = float('NaN')
+                id = -1
+                wins = float('NaN')
+                losses = float('NaN')
+                abandons = float('NaN')
+                kills = float('NaN')
+                deaths = float('NaN')
+
 
             output.loc[len(output)] = [top_rank_position, pvp_time_played, wins, losses, abandons, kills, deaths]
 
@@ -225,8 +259,16 @@ async def createData(usrs, mode):
     output = output.apply(lambda x: x.fillna(x.mean()), axis=0) 
     
     output = (output - output.mean(numeric_only=True)) / output.std(numeric_only=True)
+
+
     
     output = output.fillna(0)
+
+    #scaler = RobustScaler()
+    #imputer = IterativeImputer()
+
+    #output = imputer.fit_transform(output)
+    #output = scaler.fit_transform(output)
 
     #print(output.values)
     
@@ -239,11 +281,11 @@ async def createData(usrs, mode):
 # Custom data loader that converts dataframe to tensor
 class teamDataset(Dataset):
     def __init__(self, dataframes, winner):
-        self.teams=numpy.array(dataframes)
+        self.teams=dataframes
         self.winners=winner
         
     def __getitem__(self, index):
-        dataframe = torch.tensor(self.teams[index]).float()
+        dataframe = torch.tensor(self.teams[index].to_numpy()).float()
         winner = torch.tensor(self.winners[index]).float()
         return dataframe, winner
         
@@ -258,7 +300,10 @@ def convertToDataset(dataframe):
         toAppend = asyncio.run(createData([row['player0'],row['player1'], row['player2'], row['player3'], row['player4'], row['player5'], row['player6'], row['player7'], row['player8'], row['player9']], row['mode']))
         input.append(toAppend)
         output.append(row['winner'])
-        
+        toAppend2 = asyncio.run(createData([row['player5'], row['player6'], row['player7'], row['player8'], row['player9'],row['player0'],row['player1'], row['player2'], row['player3'], row['player4']], row['mode']))
+        input.append(toAppend2)
+        output.append(1-row['winner'])
+
     return teamDataset(dataframes=input, winner=output)
 
 # Two layered neural net, input->hidden->output

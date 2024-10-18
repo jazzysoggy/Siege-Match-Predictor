@@ -20,7 +20,7 @@ print(f"Using {device} device")
 
 best_acc = -np.inf
 
-model = NNNonFlatten(70, 30).to(device)
+model = NNNonFlatten(70, 40).to(device)
 
 model.load_state_dict(torch.load("model.pth", weights_only=True))
 
@@ -42,6 +42,7 @@ def predictTest(team, mode):
         pred = model(x)
         # First value typically is able to predict which side wins, with 0 meaning Team 1 and 1 meaning Team 2
         predicted = pred[0]
+        print(pred)
         print(f'Predicted Team: "{round(predicted.item()) + 1}"')
         
         # Value corresponds to percentage chance given team wins
@@ -81,35 +82,38 @@ from flask import make_response
 app = Flask(__name__)
 
 
-@app.route('/')
-def index():
-  return render_template('mainWeb.html')
+test = True
 
-if __name__ == "__main__":
-  app.run(debug=True)
+if not test:
+
+    @app.route('/')
+    def index():
+        return render_template('mainWeb.html')
+
+    if __name__ == "__main__":
+        app.run(debug=True)
   
-@app.route('/', methods=['GET', 'POST'])
-def index():
-  teams = 1
-  percent = 50
-  if request.method == 'POST':
-      form = request.form
-      teams, percent = predict({form.tAone, form.tAtwo, form.tAthree, form.tAfour, form.tAfive, form.tBone, form.tBtwo, form.tBthree, form.tBfour, form.tBfive}, form.mode)
-  return render_template('mainWeb.html', team=teams, percent=percent)
+    @app.route('/', methods=['GET', 'POST'])
+    def index():
+        teams = 1
+        percent = 50
+        if request.method == 'POST':
+            form = request.form
+            teams, percent = predict({form.tAone, form.tAtwo, form.tAthree, form.tAfour, form.tAfive, form.tBone, form.tBtwo, form.tBthree, form.tBfour, form.tBfive}, form.mode)
+            return render_template('mainWeb.html', team=teams, percent=percent)
       
-
-test = False
 
 # Basic command line for testing, this will be replaced with website link in
 while test:
     command = input("Type in command:")
     if(command == "QUIT"):
         quit()
-    
-    if(command.split(' ', 1)[0] == "PREDICT"):
+    elif(command.split(' ', 1)[0] == "PREDICT"):
         splitted = command.split(' ')
         splitted.pop(0)
         mode = int(splitted[-1])
         splitted.pop(-1)
         predictTest(splitted, mode)
+    else:
+        print("Valid Commands: HELP, PREDICT, QUIT")
         
