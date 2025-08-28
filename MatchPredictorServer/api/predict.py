@@ -21,8 +21,9 @@ def predict():
     
     team1 = data.get("team1", [])
     team2 = data.get("team2", [])
+    mode = data.get("mode")
     
-    results = predictTest(" ".join(team1 + team2),0)
+    results = predictTest(" ".join(team1 + team2),mode)
     
     return jsonify({"results": [True] + list(results)})
     

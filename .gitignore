@@ -1,4 +1,3 @@
-*.csv
 creds/
 .venv/
 __pycache__/

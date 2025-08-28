@@ -9,10 +9,12 @@ export default function DefaultWidget()
 {
     const [loading, setLoading] = useState(false);
 
-    const [teamA, setTeamA] = useState(["", "", "", "", ""])
-    const [teamB, setTeamB] = useState(["", "", "", "", ""])
+    const [teamA, setTeamA] = useState(["", "", "", "", ""]);
+    const [teamB, setTeamB] = useState(["", "", "", "", ""]);
 
-    const [results, setResults] = useState([false, -1, -1])
+    const [results, setResults] = useState([false, -1, -1]);
+
+    const [mode, setMode] = useState(0);
     
     const handleChange = (i, newValue, team) =>
     {
@@ -29,6 +31,10 @@ export default function DefaultWidget()
             setTeamB(updated)
         }
     }
+
+    const handleDropdown = (e) => {
+        setMode(parseInt(e.target.value));
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -84,6 +90,16 @@ export default function DefaultWidget()
                         onChange={(e) => handleChange(i, e.target.value, "B")}
                     />
                 ))}
+
+                <label htmlFor="mode-select">Select Game Mode: </label>
+                <select id="mode-select" value={mode} onChange={handleChange}>
+                    <option value={0}>Quick Play</option>
+                    <option value={1}>Standard</option>
+                    <option value={2}>Ranked</option>
+                </select>
+
+                <p>Selected Mode: {mode}</p>
+                
                 {loading ? (
                     <p>Submitting... please wait</p>
                 ) : (<button type="submit">

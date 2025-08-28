@@ -14,6 +14,8 @@ npm ci .
 
 You'll also need to create var/token.txt, and put in your Ubisoft email and password, one line after another
 
+Finally, run python training/train.py to start the training process
+
 To start the the web server, run:
 
 ```

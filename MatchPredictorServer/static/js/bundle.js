@@ -49,6 +49,10 @@ function DefaultWidget() {
     _useState8 = (0,_babel_runtime_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_2__["default"])(_useState7, 2),
     results = _useState8[0],
     setResults = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_4__.useState)(0),
+    _useState0 = (0,_babel_runtime_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_2__["default"])(_useState9, 2),
+    mode = _useState0[0],
+    setMode = _useState0[1];
   var handleChange = function handleChange(i, newValue, team) {
     if (team === "A") {
       var updated = (0,_babel_runtime_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_1__["default"])(teamA);
@@ -59,6 +63,9 @@ function DefaultWidget() {
       _updated[i] = newValue;
       setTeamB(_updated);
     }
+  };
+  var handleDropdown = function handleDropdown(e) {
+    setMode(parseInt(e.target.value));
   };
   var handleSubmit = function handleSubmit(e) {
     e.preventDefault();
@@ -136,7 +143,19 @@ function DefaultWidget() {
         return handleChange(i, e.target.value, "B");
       }
     });
-  }), loading ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_4___default().createElement("p", null, "Submitting... please wait") : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_4___default().createElement("button", {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_4___default().createElement("label", {
+    htmlFor: "mode-select"
+  }, "Select Game Mode: "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_4___default().createElement("select", {
+    id: "mode-select",
+    value: mode,
+    onChange: handleChange
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_4___default().createElement("option", {
+    value: 0
+  }, "Quick Play"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_4___default().createElement("option", {
+    value: 1
+  }, "Standard"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_4___default().createElement("option", {
+    value: 2
+  }, "Ranked")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_4___default().createElement("p", null, "Selected Mode: ", mode), loading ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_4___default().createElement("p", null, "Submitting... please wait") : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_4___default().createElement("button", {
     type: "submit"
   }, "Submit")), results[0] ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_4___default().createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_4___default().createElement("p", null, results[1] ? "Team A is favored to win" : "Team B is favored to win"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_4___default().createElement("p", null, "Chance Team A Will Win: ", results[0], "%"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_4___default().createElement("p", null, "Chance Team B Will Win: ", 100 - results[0], "%")) : null);
 }
