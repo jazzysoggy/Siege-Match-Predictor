@@ -1,0 +1,16 @@
+Flask
+Werkzeug
+Jinja2
+itsdangerous
+click
+torch
+numpy
+tqdm
+scipy
+pandas
+siegeapi
+npm
+requests
+bs4
+arrow
+scikit-learn

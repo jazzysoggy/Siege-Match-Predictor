@@ -4,10 +4,8 @@ import torch
 from torch import nn
 from math import exp
 
-from base import createData
-from base import NNNonFlatten
-
-
+from MatchPredictorServer.lib.base import createData
+from MatchPredictorServer.lib.base import NNNonFlatten
 
 device = (    
     "cuda"
@@ -16,13 +14,14 @@ device = (
     if torch.backends.mps.is_available()
     else "cpu"
 )
+
 print(f"Using {device} device")
 
 best_acc = -np.inf
 
 model = NNNonFlatten(70, 40).to(device)
 
-model.load_state_dict(torch.load("model.pth", weights_only=True))
+model.load_state_dict(torch.load("../../var/model.pth", weights_only=True))
 
 model.eval()
 
@@ -50,6 +49,8 @@ def predictTest(team, mode):
             print(f'Percentage chance team wins: "{(exp(predicted)/(1+exp(predicted)) * 100):>0.1f}"%')
         elif(round(predicted.item()) == 0):
             print(f'Percentage chance team wins: "{((1 - exp(predicted)/(1+exp(predicted))) * 100):>0.1f}"%')
+            
+        return (round(predicted.item()) + 1, (exp(predicted)/(1+exp(predicted)) * 100))
 
 
 def predict(team, mode):
@@ -76,44 +77,17 @@ def predict(team, mode):
         elif(round(predicted.item()) == 0):
             return 1, 1 - exp(predicted)/(1+exp(predicted)) * 100
         
-        
-from flask import Flask, render_template, redirect, url_for,request
-from flask import make_response
-app = Flask(__name__)
-
-
-test = True
-
-if not test:
-
-    @app.route('/')
-    def index():
-        return render_template('mainWeb.html')
-
-    if __name__ == "__main__":
-        app.run(debug=True)
-  
-    @app.route('/', methods=['GET', 'POST'])
-    def index():
-        teams = 1
-        percent = 50
-        if request.method == 'POST':
-            form = request.form
-            teams, percent = predict({form.tAone, form.tAtwo, form.tAthree, form.tAfour, form.tAfive, form.tBone, form.tBtwo, form.tBthree, form.tBfour, form.tBfive}, form.mode)
-            return render_template('mainWeb.html', team=teams, percent=percent)
-      
-
 # Basic command line for testing, this will be replaced with website link in
-while test:
-    command = input("Type in command:")
-    if(command == "QUIT"):
-        quit()
-    elif(command.split(' ', 1)[0] == "PREDICT"):
-        splitted = command.split(' ')
-        splitted.pop(0)
-        mode = int(splitted[-1])
-        splitted.pop(-1)
-        predictTest(splitted, mode)
-    else:
-        print("Valid Commands: HELP, PREDICT, QUIT")
-        
+if __name__ == "__main__":
+    while True:
+        command = input("Type in command: ")
+        if command == "QUIT":
+            quit()
+        elif command.split(' ', 1)[0] == "PREDICT":
+            splitted = command.split(' ')
+            splitted.pop(0)  # remove "PREDICT"
+            mode = int(splitted[-1])
+            splitted.pop(-1)  # remove mode from args
+            predictTest(splitted, mode)
+        else:
+            print("Valid Commands: HELP, PREDICT, QUIT")

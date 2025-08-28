@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=64.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "MatchPredictorServer"
+version = "1.0.0"
+dependencies = [
+    "arrow",
+    "bs4",
+    "Flask",
+    "requests"
+]
+requires-python = ">=3.12"
+
+[tool.setuptools]
+packages = ["MatchPredictorServer"]
+
+[tool.pylint."messages control"]
+disable = ["cyclic-import"]

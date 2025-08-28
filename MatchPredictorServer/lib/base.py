@@ -1,3 +1,4 @@
+from cmath import inf
 from siegeapi import Auth
 import asyncio
 import pandas as pd
@@ -9,9 +10,17 @@ import numpy
 from sklearn.preprocessing import RobustScaler
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
+import os
+
+file_path = "var/dataFrame.csv"
+
+if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
+    output = pd.DataFrame(columns=["top_position", "time", "wins", "losses", "abandons", "kills", "deaths"])
+    output.to_csv(file_path, index=False)
+    print(f"Created CSV with columns at {file_path}")
 
 # Dataframe for storing up to 24 hours of player data (This is to prevent API overload for overretrieved players)
-df = pd.read_csv("dataFrame.csv")
+df = pd.read_csv("var/dataFrame.csv")
 
 f = open("token.txt", "r")
 # Login keys: Replace with your own (Doesn't need to be Siege owning account)
@@ -20,7 +29,11 @@ UBISOFT_PASSW = f.readline()
 
 UBISOFT_EMAIL=UBISOFT_EMAIL[:-1]
 
-expiration = 3600*24*30
+auth = None
+
+expiration = inf
+
+timeout = time.time()
 
 # Functions meant to check whether given mode and player combination has data already stored within an alotted time
 def checkExists(players, mode):
@@ -37,7 +50,10 @@ def alreadyExists(players, mode):
 
 # This is meant for testing data retrieval (Default example offered with API)
 async def sample(usr):
-    auth = Auth(UBISOFT_EMAIL, UBISOFT_PASSW)
+    if not auth:
+        auth = Auth(UBISOFT_EMAIL, UBISOFT_PASSW)
+    
+    timeout = time.time()
     player = await auth.get_player(name=usr)
 
     print(f"Name: {player.name}")
@@ -58,12 +74,11 @@ async def sample(usr):
     print(f"Total XP: {player.total_xp:,}")
     print(f"XP to level up: {player.xp_to_level_up:,}")
 
-    await auth.close()
-
 # Creates dataframe corresponding to the player
 async def createData(usrs, mode):
     global df
-    auth = Auth(UBISOFT_EMAIL, UBISOFT_PASSW)
+    if not auth:
+        auth = Auth(UBISOFT_EMAIL, UBISOFT_PASSW)
     output = pd.DataFrame(columns=["top_position", "time", "wins", "losses", "abandons", "kills", "deaths"])
     top_rank_position = 0
     # Three modes are needed as each has different playstyle (Quick Play might be less serious, while Ranked is more serious, leads to different outcomes)
@@ -128,6 +143,8 @@ async def createData(usrs, mode):
             
             # Creates new profile
             df.loc[len(df)] = [mode, players, id, top_rank_position, pvp_time_played, wins, losses, abandons, kills, deaths, dt]
+            
+            await asyncio.sleep(1)
     elif mode == 1:
         for players in usrs:
             if checkExists(players, 1):
@@ -190,6 +207,8 @@ async def createData(usrs, mode):
             output.loc[len(output)] = [top_rank_position, pvp_time_played, wins, losses, abandons, kills, deaths]
 
             df.loc[len(df)] = [mode, players, id, top_rank_position, pvp_time_played, wins, losses, abandons, kills, deaths, dt]
+            
+            await asyncio.sleep(1)
     elif mode == 2:
         for players in usrs:
             if checkExists(players, 2):
@@ -253,14 +272,14 @@ async def createData(usrs, mode):
             output.loc[len(output)] = [top_rank_position, pvp_time_played, wins, losses, abandons, kills, deaths]
 
             df.loc[len(df)] = [mode, players, id, top_rank_position, pvp_time_played, wins, losses, abandons, kills, deaths, dt]
+            
+            await asyncio.sleep(1)
     
     output = output.apply(lambda x: x.astype(float, errors='ignore'))
     
     output = output.apply(lambda x: x.fillna(x.mean()), axis=0) 
     
     output = (output - output.mean(numeric_only=True)) / output.std(numeric_only=True)
-
-
     
     output = output.fillna(0)
 
@@ -275,7 +294,6 @@ async def createData(usrs, mode):
     df = df.loc[df['timeRecorded'] > time.time() - expiration]
     df.to_csv("dataFrame.csv", encoding='utf-8', index=False)
     
-    await auth.close()
     return output
 
 # Custom data loader that converts dataframe to tensor
@@ -306,6 +324,10 @@ def convertToDataset(dataframe):
 
     return teamDataset(dataframes=input, winner=output)
 
+def shutdown():
+    if auth:
+        asyncio.run(auth.close())
+
 # Two layered neural net, input->hidden->output
 class NeuralNetwork(nn.Module):
     def __init__(self, input_size, hidden_size):
@@ -323,7 +345,6 @@ class NeuralNetwork(nn.Module):
         y = self.flatten(x)
         logits = self.linear_relu_stack(y)
         return logits
-    
     
 class NNNonFlatten(nn.Module):
     def __init__(self, input_size, hidden_size):

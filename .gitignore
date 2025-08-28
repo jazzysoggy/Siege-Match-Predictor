@@ -2,6 +2,7 @@
 creds/
 .venv/
 __pycache__/
-token.txt
-model.pth
+/var/token.txt
 *Identifier
+env
+node_modules

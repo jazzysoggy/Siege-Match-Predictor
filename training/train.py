@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-from base import convertToDataset
-from base import NeuralNetwork
+from MatchPredictorServer.lib.base import convertToDataset
+from MatchPredictorServer.lib.base import NeuralNetwork
 
 training = pd.read_csv("train.csv")
 testing = pd.read_csv("test.csv")
@@ -80,5 +80,5 @@ for t in range(epochs):
     test(test_dataloader, model, criterion)
 print("Done!")
 
-torch.save(model.state_dict(), "model1.pth")
-print("Saved PyTorch Model State to model1.pth")
+torch.save(model.state_dict(), "../var/model.pth")
+print("Saved PyTorch Model State to model.pth")
