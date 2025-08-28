@@ -4,3 +4,4 @@ creds/
 __pycache__/
 token.txt
 model.pth
+*Identifier
